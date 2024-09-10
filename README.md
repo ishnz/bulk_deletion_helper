@@ -1,5 +1,5 @@
 # How to use:
-## dumpallmessages.py
+## dumpallmessages.py & dumpmessagesbyyear.py
 Place it in your package directory and run
 ## dumpchannelids.py & duplicatechecker.py & blacklistdumpchannelids.py
 Have a .txt full of existing channel ids in your package/messages directory in this format:
