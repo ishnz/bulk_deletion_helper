@@ -9,9 +9,6 @@ This script searches for channel ID's and logs them in `foundids.txt` where you 
 This script asks for a text file full of channel ID's (more in How To Use section) and it will dump them from the package.
 ## blacklistdumpchannelids.py
 This script asks for a text file full of channel ID's (more in How To Use section) and will dump everything but the channels you have provided.
-## duplicatechecker.py
-This script checks a file full of channel ID's for duplicates and logs them in the terminal so you can delete them to avoid duplicated channels and messages in the `messages.txt`.
-
 # How to use:
 ## dumpallmessages.py & dumpmessagesbyyear.py
 Place it in your package directory and run
