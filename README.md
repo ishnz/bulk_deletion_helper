@@ -12,7 +12,7 @@ This script asks for a text file full of channel ID's (more in How To Use sectio
 # How to use:
 ## dumpallmessages.py & dumpmessagesbyyear.py
 Place it in your package directory and run
-## dumpchannelids.py & duplicatechecker.py & blacklistdumpchannelids.py
+## dumpchannelids.py & blacklistdumpchannelids.py
 Have a .txt full of existing channel ids in your package/messages directory in this format:
 
 ```
