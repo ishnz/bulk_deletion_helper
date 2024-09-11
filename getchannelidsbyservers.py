@@ -7,8 +7,7 @@ How To Use:
 2. Execute the script (preferably in a command prompt).
 This will allow you to see a list of channel IDs as well as their channel names, make sure you are not deleting messages from servers you want to keep.
 3. Enter the name of the text file you created when prompted.
-4. The script will generate a blacklist.txt file. Run blacklistdumpchannel.py and provide blacklist.txt as input.
-5. You will get a list of channels and messages of every server except those you want to keep.
+4. The script will generate a foundfromserver.txt file. 
 
 Disclaimer: 
 This will only return channel IDs from servers you are currently in.
@@ -63,7 +62,7 @@ def dump_channel(output_file, server_ids):
 
 def dump_all():
     server_ids = get_server_channel_ids()
-    output_file = open("blacklist.txt", "w")
+    output_file = open("foundfromserver.txt", "w")
     
     os.chdir("messages")
 
