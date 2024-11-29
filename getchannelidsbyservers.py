@@ -1,79 +1,63 @@
 import json
 import os
+from typing import List
 
-opening_text = """
-Disclaimer: 
-This will only return channel IDs from servers you are currently in.
-This will not work for user or group DMs.
+def save_channels(channels: List[str]):
+	with open("channels.txt", "w", encoding='utf8') as f:
+		for channel in channels:
+			print(f'Saving channel: {channel}')
+			f.write(f'{channel}\n')
 
-Please enter a text file with the server IDs you want to retrieve channel IDs from:
-"""
+def dump_all(server_ids: List[str]) -> List[str]:
+	channels = []
+	for channel in os.listdir('messages'):
+		path = f'messages/{channel}'
+		if not os.path.isdir(path):
+			continue
 
-exit_text = "Press Enter to exit..."
+		with open(f'{path}/channel.json', 'r', encoding='utf8') as f:
+			channel_obj = json.load(f)
 
-def format_ids(channel_ids):
-    new = []
-    for id in channel_ids:
-        new.append("c" + id)
-    return new
+			channel_id = channel_obj.get('id', '')
+			channel_name = channel_obj.get('name', '')
+			guild_id = channel_obj.get('guild', {}).get('id', '')
+			guild_name = channel_obj.get('guild', {}).get('name', '')
 
-def get_server_channel_ids():
-    print(opening_text)
-    
-    server_ids_file = input()
+		if not guild_id:
+			continue
 
-    try:
-        with open(server_ids_file, 'r') as f:
-            server_ids = f.read().splitlines()
-        return server_ids
-    except FileNotFoundError:
-        print(f"Error: The file '{server_ids_file}' was not found.")
-        input(exit_text)
-        exit()
+		if guild_id not in server_ids:
+			continue
 
-def dump_channel(output_file, server_ids):
-    with open("channel.json", 'r') as f:
-        channel = json.load(f)
+		print(f'Found channel: {channel_id} (#{channel_name}) from {guild_id} ("{guild_name}")')
+		channels.append(channel_id)
 
-        channel_id = channel.get("id", "")
-        channel_name = channel.get("name", "")
+	return channels
 
-        guild_id = channel.get("guild", {}).get("id", "")
-        guild_name = channel.get("guild", {}).get("name", "")
+def get_server_ids():
+	while True:
+		file = input("Enter the text file containing the server IDs to fetch channels for:\n> ")
+		if not os.path.exists(file):
+			print("The path you entered does not exist.")
+			continue
 
-    if guild_id == "":
-        return
+		if not os.path.isfile(file):
+			print("The path you entered is not a file.")
+			continue
 
-    if not guild_id in server_ids:
-        return
+		break
 
-    output_file.write(str(channel_id) + "\n")
+	with open(file, 'r', encoding='utf8') as f:
+		lines = f.read().splitlines()
+		lines = list(set([line.strip() for line in lines if line.strip()]))
 
-    print(f"{channel_id} ({channel_name}) from {guild_id} ({guild_name}): \n")
-
-    os.chdir("..")
-
-def dump_all():
-    server_ids = get_server_channel_ids()
-    output_file = open("foundfromserver.txt", "w")
-    
-    os.chdir("messages")
-
-    subdirs = [x[0] for x in os.walk(os.getcwd())]
-    for subdir in subdirs:
-        if subdir == os.getcwd():
-            continue
-        os.chdir(subdir)
-        dump_channel(output_file, server_ids)  
-
-    output_file.close()
+	return lines
 
 def main():
-    dump_all()
-    print("Finished! Please confirm the above output of channel IDs is correct.")
-    input(exit_text)
+	server_ids = get_server_ids()
+	channels = dump_all(server_ids)
+	save_channels(channels)
 
 if __name__ == "__main__":
-    main()
-
-# python getserverschannelids.py
+	main()
+	print("Dumped to channels.txt!")

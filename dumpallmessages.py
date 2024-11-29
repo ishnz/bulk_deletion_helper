@@ -1,41 +1,52 @@
 import json
 import os
+from typing import Dict, List
 
-def change_to_package_dir():
-    os.chdir("messages")
+def save_messages(messages: Dict[str, List[int]]):
+	with open("messages.csv", "w", encoding='utf8') as f:
+		f.write('channelid,messageid\n')
+		for channel, ids in messages.items():
+			if ids is None or len(ids) == 0:
+				print(f'No messages found for channel: {channel} (skipping)')
+				continue
 
-def dump_channel_from_cur_dir(output_file):
-    print("Dumping channel from " + os.getcwd())
-    with open("channel.json", 'r') as f:
-        channel = json.load(f)
-        id = channel["id"]
-        chn_id = str(id) + ":\n"
-    with open("messages.json", encoding='utf-8', errors='ignore') as f:
-        messages = json.load(f)
-        if (messages == []):
-            os.chdir("..")
-            return
-        content = chn_id
-        for message in messages:
-            content = content + str(message["ID"]) +", "
-        content = content[:-2] + "\n\n"
-        output_file.write(content)
-    os.chdir("..")
+			print(f'Saving messages from channel: {channel}')
+			for id in ids:
+				f.write(f'{channel},{id}\n')
 
-def dump_all():
-    output_file = open("messages.txt", "w")
-    change_to_package_dir()
-    subdirs = [x[0] for x in os.walk(os.getcwd())]
-    for subdir in subdirs:
-        if subdir == os.getcwd():
-            continue
-        os.chdir(subdir)
-        dump_channel_from_cur_dir(output_file)
-    
+def dump_dir(path: str) -> List[int]:
+	messages = []
+	if not os.path.isdir(path):
+		return messages
+
+	if not os.path.exists(f'{path}/messages.json'):
+		print(f'No messages found in: {path}')
+		return messages
+
+	print(f'Dumping messages from: {path}')
+	with open(f'{path}/messages.json', 'r', encoding='utf8') as f:
+		messages_obj = json.load(f)
+		for message in messages_obj:
+			messages.append(message['ID'])
+
+	return messages
+
+def dump_all() -> Dict[str, List[int]]:
+	messages = {}
+	for channel in os.listdir('messages'):
+		path = f'messages/{channel}'
+		if not os.path.isdir(path):
+			continue
+
+		channel_id = channel.replace('c', '', 1)
+		messages[channel_id] = dump_dir(path)
+
+	return messages
 
 def main():
-    dump_all()
+	messages = dump_all()
+	save_messages(messages)
 
 if __name__ == "__main__":
-    main()
-    print("Dumped to messages.txt!")
+	main()
+	print("Dumped to messages.csv!")

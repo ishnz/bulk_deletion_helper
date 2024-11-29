@@ -1,55 +1,76 @@
 import json
 import os
+from typing import Dict, List
 
-def change_to_package_dir():
-    os.chdir("messages")
+def save_messages(messages: Dict[str, List[int]]):
+	with open("messages.csv", "w", encoding='utf8') as f:
+		f.write('channelid,messageid\n')
+		for channel, ids in messages.items():
+			if ids is None or len(ids) == 0:
+				print(f'No messages found for channel: {channel} (skipping)')
+				continue
 
-def format_ids(channel_ids):
-    new = []
-    for id in channel_ids:
-        new.append("c" + id)
-    return new
+			print(f'Saving messages from channel: {channel}')
+			for id in ids:
+				f.write(f'{channel},{id}\n')
 
-def get_channel_ids():
-    print("Enter the text file containing the channel IDs to exclude.")
-    exclude_ids_file = input()
-    with open(exclude_ids_file, 'r') as f:
-        exclude_ids = f.read().splitlines()
-    exclude_ids = format_ids(exclude_ids)
-    return exclude_ids
+def dump_dir(path: str) -> List[int]:
+	messages = []
+	if not os.path.isdir(path):
+		return messages
 
-def get_all_channel_dirs():
-    
-    return [d for d in os.listdir() if os.path.isdir(d)]
+	if not os.path.exists(f'{path}/messages.json'):
+		print(f'No messages found in: {path}')
+		return messages
 
-def dump_channel(id, output_file):
-    print("Dumping channel " + id + "...")
-    os.chdir(id)
-    output_file.write(id.replace("c", "") + ":\n")
-    with open("messages.json", encoding='utf-8', errors='ignore') as f:
-        messages = json.load(f)
-        content = ""
-        for message in messages:
-            content = content + str(message["ID"]) + ", "
-        content = content[:-2] + "\n\n"
-        output_file.write(content)
-    os.chdir("..")
+	print(f'Dumping messages from: {path}')
+	with open(f'{path}/messages.json', 'r', encoding='utf8') as f:
+		messages_obj = json.load(f)
+		for message in messages_obj:
+			messages.append(message['ID'])
 
-def dump_all(exclude_ids):
-    output_file = open("messages.txt", "w")
-    change_to_package_dir()
+	return messages
 
-    all_channel_dirs = get_all_channel_dirs()
+def dump_all(blacklist: List[str]) -> Dict[str, List[int]]:
+	messages = {}
+	for channel in os.listdir('messages'):
+		path = f'messages/{channel}'
+		if not os.path.isdir(path):
+			continue
 
-    channels_to_dump = [id for id in all_channel_dirs if id not in exclude_ids]
+		channel_id = channel.replace('c', '', 1)
+		if channel_id in blacklist:
+			print(f'Skipping channel: {channel_id} (in blacklist)')
+			continue
 
-    for id in channels_to_dump:
-        dump_channel(id, output_file)
+		messages[channel_id] = dump_dir(path)
+
+	return messages
+
+def get_blacklist_channels():
+	while True:
+		file = input("Enter the text file containing the channel IDs to exclude:\n> ")
+		if not os.path.exists(file):
+			print("The path you entered does not exist.")
+			continue
+
+		if not os.path.isfile(file):
+			print("The path you entered is not a file.")
+			continue
+
+		break
+
+	with open(file, 'r', encoding='utf8') as f:
+		lines = f.read().splitlines()
+		lines = list(set([line.strip() for line in lines if line.strip()]))
+
+	return lines
 
 def main():
-    exclude_ids = get_channel_ids()
-    dump_all(exclude_ids)
+	blacklist = get_blacklist_channels()
+	messages = dump_all(blacklist)
+	save_messages(messages)
 
 if __name__ == "__main__":
-    main()
-    print("Dumped to messages.txt!")
+	main()
+	print("Dumped to messages.csv!")
