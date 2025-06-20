@@ -10,8 +10,8 @@ def save_channels(channels: List[str]):
 
 def dump_all(server_ids: List[str]) -> List[str]:
 	channels = []
-	for channel in os.listdir('messages'):
-		path = f'messages/{channel}'
+	for channel in os.listdir('Messages'):
+		path = f'Messages/{channel}'
 		if not os.path.isdir(path):
 			continue
 

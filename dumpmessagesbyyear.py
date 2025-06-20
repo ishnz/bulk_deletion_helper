@@ -36,8 +36,8 @@ def dump_dir(path: str, years: List[str]) -> List[int]:
 
 def dump_all(years: List[str]) -> Dict[str, List[int]]:
 	messages = {}
-	for channel in os.listdir('messages'):
-		path = f'messages/{channel}'
+	for channel in os.listdir('Messages'):
+		path = f'Messages/{channel}'
 		if not os.path.isdir(path):
 			continue
 
